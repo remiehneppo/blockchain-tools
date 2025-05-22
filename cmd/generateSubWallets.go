@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
+	"github.com/remiehneppo/go-binance-api/types"
 	"github.com/spf13/cobra"
 )
 
@@ -37,11 +38,6 @@ to quickly create a Cobra application.`,
 		num, err := cmd.Flags().GetInt("num")
 		if err != nil {
 			fmt.Println("Error getting num flag:", err)
-			return
-		}
-		path, err := cmd.Flags().GetString("path")
-		if err != nil {
-			fmt.Println("Error getting path flag:", err)
 			return
 		}
 
@@ -90,7 +86,7 @@ to quickly create a Cobra application.`,
 					return
 				}
 
-				path := hdwallet.MustParseDerivationPath(fmt.Sprintf("%s%d", path, j))
+				path := hdwallet.MustParseDerivationPath(fmt.Sprintf("%s%d", types.HD_BASE_PATH, j))
 				account, err := wallet.Derive(path, false)
 				if err != nil {
 					fmt.Println("Error deriving account:", err)
@@ -116,7 +112,7 @@ to quickly create a Cobra application.`,
 			}
 		}
 		// Add your logic to generate sub wallets here
-		fmt.Printf("Using HD path: %s\n", path)
+		fmt.Printf("Using HD path: %s\n", types.HD_BASE_PATH)
 	},
 }
 
@@ -135,5 +131,4 @@ func init() {
 	generateSubWalletsCmd.Flags().StringP("input", "i", "wallets.csv", "Input file with root wallets")
 	generateSubWalletsCmd.Flags().StringP("output", "o", "sub_wallets", "Output file for sub wallets")
 	generateSubWalletsCmd.Flags().IntP("num", "n", 10, "Number of sub wallets to generate")
-	generateSubWalletsCmd.Flags().StringP("path", "p", "m/44'/60'/0'/0/", "HD path for sub wallets")
 }

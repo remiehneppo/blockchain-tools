@@ -1,6 +1,5 @@
 /*
 Copyright © 2025 remiehneppo
-
 */
 package cmd
 
@@ -58,14 +57,10 @@ func initConfig() {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// Find home directory.
-		home, err := os.UserHomeDir()
-		cobra.CheckErr(err)
 
-		// Search config in home directory with name ".go-binance-api" (without extension).
-		viper.AddConfigPath(home)
+		viper.AddConfigPath("./")
 		viper.SetConfigType("yaml")
-		viper.SetConfigName(".go-binance-api")
+		viper.SetConfigName(".config")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
