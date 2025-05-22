@@ -41,5 +41,5 @@ func init() {
 	distributeCoinCmd.Flags().StringP("network", "n", "", "network")
 	distributeCoinCmd.Flags().StringP("min", "m", "0.01", "min amount")
 	distributeCoinCmd.Flags().StringP("max", "x", "0.1", "max amount")
-	distributeCoinCmd.Flags().IntP("num", "n", 10, "number of subaccounts")
+	distributeCoinCmd.Flags().Int("num", 10, "number of subaccounts")
 }

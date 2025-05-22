@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
 
 	binance_connector "github.com/binance/binance-connector-go"
 	"github.com/joho/godotenv"
+	"github.com/remiehneppo/go-binance-api/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -32,6 +32,7 @@ to quickly create a Cobra application.`,
 			fmt.Println("Error getting input flag:", err)
 			return
 		}
+
 		token, err := cmd.Flags().GetString("token")
 		if err != nil {
 			fmt.Println("Error getting input flag:", err)
@@ -54,23 +55,19 @@ to quickly create a Cobra application.`,
 
 		client := binance_connector.NewClient(apiKey, secretKey)
 
-		inputBytes, err := os.ReadFile(input)
-		if err != nil {
-			fmt.Println("error read input: ", err)
-		}
-		lines := strings.Split(string(inputBytes), "\n")
-		headers := strings.Split(lines[0], ",")
-		headerColls := make(map[string]int)
-		for i, header := range headers {
-			headerColls[strings.ToLower(header)] = i
-		}
-		for _, line := range lines[1:] {
-			if line == "" {
+		csvExporter := utils.NewCSVExporter(input)
+
+		for row := range csvExporter.GetRowsCount() {
+			address, ok := csvExporter.GetCell("address", row)
+			if !ok {
+				fmt.Println("Error getting address cell")
 				continue
 			}
-			cells := strings.Split(line, ",")
-			address := cells[headerColls["address"]]
-			amount := cells[headerColls["amount"]]
+			amount, ok := csvExporter.GetCell("amount", row)
+			if !ok {
+				fmt.Println("Error getting amount cell")
+				continue
+			}
 			amountFloat, err := strconv.ParseFloat(amount, 64)
 			if err != nil {
 				fmt.Println("error parse amount: ", err)
@@ -104,7 +101,7 @@ func init() {
 	// is called directly, e.g.:
 	// binanceWithdrawCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	apiConnectCmd.Flags().StringP("input", "i", "wallets.csv", "Input file addresses")
-	apiConnectCmd.Flags().StringP("token", "t", "ETH", "Token symbol")
-	apiConnectCmd.Flags().StringP("network", "n", "base", "Network withdraw")
+	binanceWithdrawCmd.Flags().StringP("input", "i", "withdraw.csv", "Input file addresses")
+	binanceWithdrawCmd.Flags().StringP("token", "t", "ETH", "Token symbol")
+	binanceWithdrawCmd.Flags().StringP("network", "n", "BASE", "Network withdraw")
 }

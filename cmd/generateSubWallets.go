@@ -6,10 +6,10 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
 	"github.com/remiehneppo/go-binance-api/types"
+	"github.com/remiehneppo/go-binance-api/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -55,29 +55,15 @@ to quickly create a Cobra application.`,
 			fmt.Println("Error writing header to output file:", err)
 			return
 		}
-		// Read the input file and generate sub wallets
-		inputFileContent, err := os.ReadFile(input)
-		if err != nil {
-			fmt.Println("Error reading input file:", err)
-			return
-		}
-		contentString := string(inputFileContent)
-		lines := strings.Split(contentString, "\n")
-		headerLines := lines[0]
-		headers := strings.Split(headerLines, ",")
-		headersColl := make(map[string]int)
-		for i, header := range headers {
-			headersColl[strings.ToLower(header)] = i
-		}
-		for i, line := range lines {
-			if i == 0 {
-				continue
+		csvExporter := utils.NewCSVExporter(input)
+
+		for row := range csvExporter.GetRowsCount() {
+
+			mnemonic, ok := csvExporter.GetCell("mnemonic", row)
+			if !ok {
+				fmt.Println("Error getting mnemonic from CSV file")
+				return
 			}
-			if line == "" {
-				continue
-			}
-			columns := strings.Split(line, ",")
-			mnemonic := columns[headersColl["mnemonic"]]
 
 			for j := 0; j < num; j++ {
 				wallet, err := hdwallet.NewFromMnemonic(mnemonic)
@@ -103,7 +89,7 @@ to quickly create a Cobra application.`,
 					return
 				}
 				// Write the wallet information to the CSV file
-				_, err = outputFile.WriteString(fmt.Sprintf("%d,%s,%d,%s,%s\n", i, mnemonic, j, privateKey, address))
+				_, err = outputFile.WriteString(fmt.Sprintf("%d,%s,%d,%s,%s\n", row, mnemonic, j, privateKey, address))
 				if err != nil {
 					fmt.Println("Error writing wallet to output file:", err)
 					return
