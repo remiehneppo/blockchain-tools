@@ -43,6 +43,12 @@ to quickly create a Cobra application.`,
 			return
 		}
 		fmt.Println("Successfully connected to Binance API")
+		walletBalance, err := client.NewWalletBalanceService().Do(cmd.Context())
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(binance_connector.PrettyPrint(walletBalance))
 	},
 }
 

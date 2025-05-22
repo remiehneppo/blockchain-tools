@@ -6,6 +6,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	binance_connector "github.com/binance/binance-connector-go"
@@ -58,6 +59,35 @@ to quickly create a Cobra application.`,
 			fmt.Println("error read input: ", err)
 		}
 		lines := strings.Split(string(inputBytes), "\n")
+		headers := strings.Split(lines[0], ",")
+		headerColls := make(map[string]int)
+		for i, header := range headers {
+			headerColls[header] = i
+		}
+		for _, line := range lines[1:] {
+			if line == "" {
+				continue
+			}
+			cells := strings.Split(line, ",")
+			address := cells[headerColls["address"]]
+			amount := cells[headerColls["amount"]]
+			amountFloat, err := strconv.ParseFloat(amount, 64)
+			if err != nil {
+				fmt.Println("error parse amount: ", err)
+				return
+			}
+
+			withdraw, err := client.NewWithdrawService().Coin(token).Network(network).Address(address).
+				Amount(amountFloat).Do(cmd.Context())
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			fmt.Println(binance_connector.PrettyPrint(withdraw))
+			fmt.Println("Withdraw request sent successfully. address: ", address, " amount: ", amountFloat)
+			fmt.Println("Withdraw ID: ", withdraw.Id)
+		}
+
 	},
 }
 

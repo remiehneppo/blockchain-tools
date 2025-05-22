@@ -3,13 +3,15 @@ module github.com/remiehneppo/go-binance-api
 go 1.23.6
 
 require (
+	github.com/binance/binance-connector-go v0.8.0
+	github.com/joho/godotenv v1.5.1
+	github.com/miguelmota/go-ethereum-hdwallet v0.1.3
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
 	github.com/tyler-smith/go-bip39 v1.1.0
 )
 
 require (
-	github.com/binance/binance-connector-go v0.8.0 // indirect
 	github.com/bitly/go-simplejson v0.5.1 // indirect
 	github.com/bits-and-blooms/bitset v1.22.0 // indirect
 	github.com/btcsuite/btcd v0.24.2 // indirect
@@ -29,8 +31,6 @@ require (
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/holiman/uint256 v1.3.2 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/joho/godotenv v1.5.1 // indirect
-	github.com/miguelmota/go-ethereum-hdwallet v0.1.3 // indirect
 	github.com/mmcloughlin/addchain v0.4.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
 	github.com/sagikazarmark/locafero v0.7.0 // indirect
