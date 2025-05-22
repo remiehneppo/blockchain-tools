@@ -62,7 +62,7 @@ to quickly create a Cobra application.`,
 		headers := strings.Split(lines[0], ",")
 		headerColls := make(map[string]int)
 		for i, header := range headers {
-			headerColls[header] = i
+			headerColls[strings.ToLower(header)] = i
 		}
 		for _, line := range lines[1:] {
 			if line == "" {
