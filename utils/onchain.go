@@ -15,9 +15,10 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-func TransferAllNative(
+func TransferNative(
 	privateKey string,
 	dest string,
+	amount *big.Int,
 	client *ethclient.Client,
 ) (string, error) {
 	// Parse private key
@@ -49,26 +50,27 @@ func TransferAllNative(
 	if err != nil {
 		return "", fmt.Errorf("failed to suggest gas price: %v", err)
 	}
-
-	// Get account balance
-	balance, err := client.BalanceAt(context.Background(), fromAddress, nil)
-	if err != nil {
-		return "", fmt.Errorf("failed to get balance: %v", err)
-	}
-
+	gasPrice = new(big.Int).Mul(gasPrice, big.NewInt(2)) // Double the gas price for safety
 	// Calculate gas limit (use default value for native token transfer)
-	gasLimit := uint64(21000)
+	gasLimit := uint64(30000)
 
 	// Calculate transaction fee
 	txFee := new(big.Int).Mul(gasPrice, big.NewInt(int64(gasLimit)))
+	if amount == nil {
+		// Get account balance
+		balance, err := client.BalanceAt(context.Background(), fromAddress, nil)
+		if err != nil {
+			return "", fmt.Errorf("failed to get balance: %v", err)
+		}
 
-	// Check if balance is sufficient
-	if balance.Cmp(txFee) <= 0 {
-		return "", fmt.Errorf("insufficient balance for transaction fee")
+		// Check if balance is sufficient
+		if balance.Cmp(txFee) <= 0 {
+			return "", fmt.Errorf("insufficient balance for transaction fee")
+		}
+
+		// Calculate amount to send (balance - txFee)
+		amount = new(big.Int).Sub(balance, txFee)
 	}
-
-	// Calculate amount to send (balance - txFee)
-	amount := new(big.Int).Sub(balance, txFee)
 
 	// Create transaction
 	tx := ethtypes.NewTransaction(nonce, toAddress, amount, gasLimit, gasPrice, nil)
@@ -98,6 +100,7 @@ func TransferToken(
 	privatekey string,
 	dest string,
 	tokenAddress string,
+	amount *big.Int,
 	client *ethclient.Client,
 ) (string, error) {
 	// Parse private key
@@ -125,22 +128,25 @@ func TransferToken(
 	if err != nil {
 		return "", err
 	}
+	gasPrice = new(big.Int).Mul(gasPrice, big.NewInt(2)) // Double the gas price for safety
 
-	balanceOfFnSignature := []byte("balanceOf(address)")
-	balanceMethodID := crypto.Keccak256(balanceOfFnSignature)[:4]
-	paddedFromAddress := common.LeftPadBytes(fromAddress.Bytes(), 32)
-	balanceData := append(balanceMethodID, paddedFromAddress...)
-	// Make a call to the token contract to get the balance
-	result, err := client.CallContract(context.Background(), ethereum.CallMsg{
-		To:   &tokenContractAddress,
-		Data: balanceData,
-	}, nil)
-	if err != nil {
-		return "", fmt.Errorf("failed to get token balance: %v", err)
-	}
-	amount := new(big.Int).SetBytes(result)
-	if amount.Cmp(big.NewInt(0)) == 0 {
-		return "", fmt.Errorf("insufficient token balance")
+	if amount == nil {
+		balanceOfFnSignature := []byte("balanceOf(address)")
+		balanceMethodID := crypto.Keccak256(balanceOfFnSignature)[:4]
+		paddedFromAddress := common.LeftPadBytes(fromAddress.Bytes(), 32)
+		balanceData := append(balanceMethodID, paddedFromAddress...)
+		// Make a call to the token contract to get the balance
+		result, err := client.CallContract(context.Background(), ethereum.CallMsg{
+			To:   &tokenContractAddress,
+			Data: balanceData,
+		}, nil)
+		if err != nil {
+			return "", fmt.Errorf("failed to get token balance: %v", err)
+		}
+		amount = new(big.Int).SetBytes(result)
+		if amount.Cmp(big.NewInt(0)) == 0 {
+			return "", fmt.Errorf("insufficient token balance")
+		}
 	}
 
 	transferFnSignature := []byte("transfer(address,uint256)")
@@ -246,6 +252,7 @@ func CallMethod(
 	if err != nil {
 		return "", fmt.Errorf("failed to suggest gas price: %v", err)
 	}
+	gasPrice = new(big.Int).Mul(gasPrice, big.NewInt(2)) // Double the gas price for safety
 
 	// Build the method signature
 	var methodSig string

@@ -22,8 +22,8 @@ func NewCSVExporter(path string) *CSVExporter {
 	for i, header := range headers {
 		headerMap[strings.TrimSpace(strings.ToLower(header))] = i
 	}
-	rows := make([][]string, len(lines)-1)
-	for i, line := range lines[1:] {
+	var rows [][]string
+	for _, line := range lines[1:] {
 		if line == "" {
 			continue
 		}
@@ -31,7 +31,7 @@ func NewCSVExporter(path string) *CSVExporter {
 		for j, cell := range cells {
 			cells[j] = strings.TrimSpace(cell)
 		}
-		rows[i] = cells
+		rows = append(rows, cells)
 	}
 	return &CSVExporter{
 		headers: headerMap,

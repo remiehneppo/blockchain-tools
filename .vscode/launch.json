@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "debug",
             "program": "main.go",
-            "args": ["binance-withdraw"]
+            "args": ["distribute-coin", "-i", "wallets.csv", "-r", "https://arb1.arbitrum.io/rpc"]
         }
 
     ]

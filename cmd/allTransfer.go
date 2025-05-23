@@ -57,28 +57,30 @@ to quickly create a Cobra application.`,
 				fmt.Println("error get private key at row", row)
 			}
 			if token == "" {
-				txHash, err := utils.TransferAllNative(
+				txHash, err := utils.TransferNative(
 					privateKey,
 					address,
+					nil,
 					client,
 				)
 				if err != nil {
-					fmt.Printf("error transfer native with account at row %d", row)
+					fmt.Printf("error transfer native with account at row %d\n", row)
 					continue
 				}
-				fmt.Printf("transfer native successfully, tx hash: %s", txHash)
+				fmt.Printf("transfer native successfully, tx hash: %s\n", txHash)
 			} else {
 				txHash, err := utils.TransferToken(
 					privateKey,
 					address,
 					token,
+					nil,
 					client,
 				)
 				if err != nil {
-					fmt.Printf("error transfer %s with account at row %d", token, row)
+					fmt.Printf("error transfer %s with account at row %d\n", token, row)
 					continue
 				}
-				fmt.Printf("transfer %s successfully, tx hash: %s", token, txHash)
+				fmt.Printf("transfer %s successfully, tx hash: %s\n", token, txHash)
 			}
 
 		}
