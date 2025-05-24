@@ -169,7 +169,7 @@ func init() {
 	distributeCoinCmd.Flags().StringP("token", "t", "", "token")
 	distributeCoinCmd.Flags().StringP("rpc", "r", "", "network")
 	distributeCoinCmd.Flags().StringP("min", "m", "1000000000000000", "min amount")
-	distributeCoinCmd.Flags().StringP("max", "x", "10000000000000000", "max amount")
+	distributeCoinCmd.Flags().StringP("max", "x", "2000000000000000", "max amount")
 	distributeCoinCmd.Flags().Int("num", 10, "number of subaccounts")
 	distributeCoinCmd.Flags().StringP("output", "o", "distribute.csv", "output file")
 }
