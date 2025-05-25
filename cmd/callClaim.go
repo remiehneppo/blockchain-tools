@@ -96,7 +96,7 @@ to quickly create a Cobra application.`,
 				fmt.Println("Error waiting for transaction to be mined:", err)
 				continue
 			}
-			_, err = outputFile.WriteString(fmt.Sprintf("%s,%s,%s,%t\n",
+			_, err = outputFile.WriteString(fmt.Sprintf("%s,%s,%t\n",
 				account.Hex(),
 				tx.Hash().Hex(),
 				txReceipt.Status == 1,
