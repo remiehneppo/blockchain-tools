@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -384,4 +385,29 @@ func CallMethod(
 	}
 
 	return signedTx.Hash().Hex(), nil
+}
+
+func PrepareTransactor(ctx context.Context, client ethclient.Client, privateKey string, chainId *big.Int) (*bind.TransactOpts, *common.Address, error) {
+
+	ecdsaPrivateKey, err := crypto.HexToECDSA(privateKey)
+	if err != nil {
+		return nil, nil, fmt.Errorf("invalid private key: %v", err)
+	}
+	address := crypto.PubkeyToAddress(ecdsaPrivateKey.PublicKey)
+	transactOpts, err := bind.NewKeyedTransactorWithChainID(
+		ecdsaPrivateKey,
+		chainId,
+	)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error creating transactor: %v", err)
+	}
+	transactOpts.Context = ctx
+	transactOpts.GasLimit = 1000000 // Set a reasonable gas limit
+	gasPrice, err := client.SuggestGasPrice(ctx)
+	if err != nil {
+		return nil, nil, fmt.Errorf("error suggesting gas price")
+	}
+	transactOpts.GasPrice = new(big.Int).Mul(gasPrice, big.NewInt(1))
+
+	return transactOpts, &address, nil
 }
