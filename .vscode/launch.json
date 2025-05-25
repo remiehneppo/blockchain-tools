@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "debug",
             "program": "main.go",
-            "args": ["distribute-coin", "-i", "wallets.csv", "-r", "https://sepolia.base.org"]
+            "args": ["call-invest", "-i", "distribute.csv", "-r", "https://sepolia.base.org", "-c", "0x469006FEF515defc44F17E484072Dd9738c14d65"]
         }
 
     ]
