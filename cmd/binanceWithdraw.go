@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"time"
 
 	binance_connector "github.com/binance/binance-connector-go"
 	"github.com/joho/godotenv"
@@ -32,15 +33,29 @@ to quickly create a Cobra application.`,
 			fmt.Println("Error getting input flag:", err)
 			return
 		}
+		output, err := cmd.Flags().GetString("output")
+		if err != nil {
+			fmt.Println("Error getting output flag:", err)
+			return
+		}
+		outputFile, err := os.Create(output)
+		if err != nil {
+			fmt.Println("Error creating output file:", err)
+			return
+		}
+		defer outputFile.Close()
+		fmt.Println("Output file created:", output)
+		// Get the token and network flags
+		outputFile.Write([]byte("address,amount,withdraw_id,error\n")) // Write header to output file
 
 		token, err := cmd.Flags().GetString("token")
 		if err != nil {
-			fmt.Println("Error getting input flag:", err)
+			fmt.Println("Error getting token flag:", err)
 			return
 		}
 		network, err := cmd.Flags().GetString("network")
 		if err != nil {
-			fmt.Println("Error getting input flag:", err)
+			fmt.Println("Error getting network flag:", err)
 			return
 		}
 
@@ -73,16 +88,20 @@ to quickly create a Cobra application.`,
 				fmt.Println("error parse amount: ", err)
 				return
 			}
-
+			fmt.Println("Withdraw request for address: ", address, " amount: ", amountFloat)
 			withdraw, err := client.NewWithdrawService().Coin(token).Network(network).Address(address).
 				Amount(amountFloat).Do(cmd.Context())
 			if err != nil {
-				fmt.Println(err)
-				return
+				outputFile.Write([]byte(fmt.Sprintf("%s,%f,,%s\n", address, amountFloat, err.Error())))
+				fmt.Println("Error sending withdraw request:", err)
+				continue
 			}
 			fmt.Println(binance_connector.PrettyPrint(withdraw))
 			fmt.Println("Withdraw request sent successfully. address: ", address, " amount: ", amountFloat)
 			fmt.Println("Withdraw ID: ", withdraw.Id)
+			outputFile.Write([]byte(fmt.Sprintf("%s,%f,%s,\n", address, amountFloat, withdraw.Id)))
+			// sleep for 5 seconds to avoid rate limit
+			time.Sleep(5 * time.Second)
 		}
 
 	},
@@ -104,4 +123,5 @@ func init() {
 	binanceWithdrawCmd.Flags().StringP("input", "i", "withdraw.csv", "Input file addresses")
 	binanceWithdrawCmd.Flags().StringP("token", "t", "ETH", "Token symbol")
 	binanceWithdrawCmd.Flags().StringP("network", "n", "BASE", "Network withdraw")
+	binanceWithdrawCmd.Flags().StringP("output", "o", "withdraw_result.csv", "Output file for withdraw results")
 }
